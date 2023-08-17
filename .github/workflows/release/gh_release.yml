@@ -3,7 +3,7 @@
 #   - release-drafter is used to create release notes
 #     (see https://github.com/marketplace/actions/release-drafter)
 #   - main branch is protected
-name: Release package
+name: Release package on GH
 on:
   workflow_call:
     inputs:
