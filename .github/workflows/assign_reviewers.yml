@@ -1,0 +1,15 @@
+---
+# Uses kentaro-m/auto-assign-action
+# See instructions: https://github.com/marketplace/actions/auto-assign-action
+name: Assign reviewer
+on:
+  workflow_call:
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign reviewer
+        uses: kentaro-m/auto-assign-action@v1.2.5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
