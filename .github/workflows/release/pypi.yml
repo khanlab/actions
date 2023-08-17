@@ -1,0 +1,55 @@
+---
+# Assumes:
+#   - Poetry is used for dependency management
+name: Deploy package to PyPI
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        description: Python version to use to build and deploy package
+        required: false
+        default: "3.10"
+        type: string
+      manager:
+        description: Dependency manager used (e.g. poetry)
+        required: false
+        default: "poetry"
+        type: string
+    secrets:
+      PYPI_API_TOKEN:
+        required: true
+
+jobs:
+  pypi_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout latest release tag
+        run: |
+          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          git checkout $LATEST_TAG
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      # Use poetry to build and publish package
+      - name: Install poetry
+        uses: snok/install-poetry@v1
+        if: inputs.manager == "poetry"
+        id: setup-poetry
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Build and publish
+        if: steps.setup-poetry.outcome == 'success'
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          poetry publish --build
