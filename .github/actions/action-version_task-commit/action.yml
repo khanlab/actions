@@ -35,13 +35,13 @@ runs:
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git diff-index --quiet HEAD || git commit -m "Bump version to $VERSION" -
+        git diff-index --quiet HEAD || git commit -m "Bump version to $VERSION" -a
 
     - name: Push changes
       uses: CasperWA/push-protected@v2
       with:
         branch: ${{ github.event.pull_request.base.ref }}
-        token: ${{ secrets.BP-PAT }}
+        token: ${{ inputs.BP-PAT }}
         unprotect_reviews: true
 
     - name: Publish changelog

@@ -10,7 +10,7 @@ inputs:
   cache-id:
     description: Reference id to define cache
     required: false
-    default: ${{ github.event.pull_request_id || github.event.after }}
+    default: ${{ github.event.pull_request.id || github.event.after }}
     type: string
   manager:
     description: Dependency manager used (e.g. poetry)

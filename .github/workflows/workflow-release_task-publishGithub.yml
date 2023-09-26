@@ -16,6 +16,11 @@ on:
         required: false
         default: pyproject.toml
         type: string
+      pipeline-description:
+        description: Boolean flag to update pipeline_description.json
+        required: false
+        default: false
+        type: boolean
     secrets:
       BP-PAT:
         required: true
@@ -31,7 +36,7 @@ jobs:
 
       - name: Grab release version
         id: semver
-        uses: ./.github/actions/action-version_task-updateReleaseVersion
+        uses: khanlab/actions/.github/actions/action-version_task-updateReleaseVersion@v0.2.0
         with:
           project-metadata: ${{ inputs.project-metadata }}
           bp-pat: ${{ secrets.BP-PAT }}
@@ -43,8 +48,16 @@ jobs:
           find: version = "(?:([0-9]+\.[0-9]+\.[0-9]+.+)|([0-9]+\.[0-9]+\.[0-9]+))"
           replace: version = "${{ steps.semver.outputs.new-version }}"
 
+      - name: Update pipeline description
+        if: inputs.pipeline-description
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          include: "**/pipeline_description.json"
+          find: '"Version": "(?:([0-9]+\.[0-9]+\.[0-9]+.+)|([0-9]+\.[0-9]+\.[0-9]+))"'
+          replace: '"Version": "${{ steps.semver.outputs.new-version }}"'
+
       - name: Commit changes and publish changelog
-        uses: ./.github/actions/action-version_task-commit
+        uses: khanlab/actions/.github/actions/action-version_task-commit@v0.2.0
         with:
           version: ${{ steps.semver.outputs.new-version }}
           bp-pat: ${{ secrets.BP-PAT }}
