@@ -1,0 +1,56 @@
+---
+# Should be used together with action-version_task-preRelease
+# (see workflow-version_task-semverGithub for example usage)
+#
+# Assumes:
+#   - main brain is protected
+name: Push to protected branch
+description: Push new changes / updates to a protected branch
+inputs:
+  version:
+    description: New / updated project version
+    required: false
+    type: string
+  bp-pat:
+    description: Personal access token to update branch protection
+    required: true
+    type: string
+  release:
+    description: Boolean flag to indicate part of Github release workflow
+    required: false
+    default: false
+    type: boolean
+  branch:
+    description: Triggering branch to checkout
+    required: false
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: Commit updates
+      env:
+        VERSION: ${{ inputs.version }}
+      shell: bash
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git diff-index --quiet HEAD || git commit -m "Bump version to $VERSION" -
+
+    - name: Push changes
+      uses: CasperWA/push-protected@v2
+      with:
+        branch: ${{ github.event.pull_request.base.ref }}
+        token: ${{ secrets.BP-PAT }}
+        unprotect_reviews: true
+
+    - name: Publish changelog
+      uses: release-drafter/release-drafter@v5
+      if: ${{ inputs.release }} == 'true'
+      with:
+        commitish: ${{ inputs.branch }}
+        publish: true
+        name: ${{ inputs.version }}
+        tag: v${{ inputs.version }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.bp-pat }}
