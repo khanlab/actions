@@ -1,0 +1,77 @@
+---
+# Should be used used together with action-version_task-commit
+# (see workflow-version_task-semverGithub for example usage)
+#
+# Assumes:
+#   - release-drafter is used to create release notes
+#     (see https://github.com/marketplace/actions/release-drafter)
+name: Get previous project version
+description: Get the last version from project metadata for prerelease
+inputs:
+  project-metadata:
+    description: Metadata file containing project version (e.g. pyproject.toml)
+    required: false
+    default: pyproject.toml
+    type: string
+  bp-pat:
+    description: Personal access token to update branch protection
+    required: true
+    type: string
+outputs:
+  new-version:
+    description: Next pre-release version
+    value: ${{ steps.update-semver.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout branch
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.base.ref }}
+
+    - name: Update changelog
+      uses: release-drafter/release-drafter@v5
+      id: release-drafter
+      with:
+        commitish: ${{ github.event.pull_request.base.ref }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.bp-pat }}
+
+    - name: Get previous release version
+      env:
+        METADATA: ${{ inputs.project-metadata }}
+      shell: bash
+      run: |
+        echo "PREV_VER=$(cat $METADATA | grep -o -E '(version\s=\s)([[:punct:]])([0-9]+\.[0-9]+\.[0-9]+.+)([[:punct:]])' | cut -d ' ' -f 3 | tr -d '"')" >> $GITHUB_ENV
+
+    - name: Get previous bump version
+      env:
+        PREV_VER: ${{ env.PREV_VER }}
+      shell: bash
+      run: |
+        if [[ "$PREV_VER" != *"-pre."* ]]; then
+          echo "OLD_BUMP=0" >> $GITHUB_ENV
+        else
+          echo "OLD_BUMP=$(echo $PREV_VER | cut -d '.' -f 4)" >> $GITHUB_ENV
+        fi
+
+    - name: Bump version
+      env:
+        BUMP_VER: ${{ env.OLD_BUMP }}
+      shell: bash
+      run: |
+        echo "NEW_BUMP=$(($BUMP_VER + 1))" >> $GITHUB_ENV
+
+    - name: Set new release version
+      id: update-semver
+      env:
+        RD_RELEASE: ${{ steps.release-drafter.outputs.name }}
+        BUMP_VER: ${{ env.NEW_BUMP }}
+      shell: bash
+      run: |
+        if [ ! -z "$RD_RELEASE" ]; then
+          echo "version=${RD_RELEASE}-pre-${BUMP_VER}" >> $GITHUB_OUTPUT
+        else
+          echo "version=0.1.0-pre-${BUMP_VER}" >> $GITHUB_OUTPUT
+        fi

@@ -1,0 +1,59 @@
+---
+# Should be used used together with action-version_task-commit
+# (see workflow-version_task-publishGithub for example usage)
+#
+# Assumes:
+#   - release-drafter is used to create release notes
+#     (see https://github.com/marketplace/actions/release-drafter)
+name: Get previous project version
+description: Get the last version from project metadata for release
+inputs:
+  project-metadata:
+    description: Metadata file containing project version (e.g. pyproject.toml)
+    required: false
+    default: pyproject.toml
+    type: string
+  bp-pat:
+    description: Personal access token to update branch protection
+    required: true
+    type: string
+outputs:
+  new-version:
+    description: Next pre-release version
+    value: ${{ steps.update-semver.outputs.version }}
+  branch:
+    description: Triggering branch
+    value: ${{ steps.extract-branch.outputs.branch }}
+
+runs:
+  using: composite
+  steps:
+    - name: Extract triggering branch
+      id: extract-branch
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+
+    - name: Checkout triggering branch
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ steps.extract-branch.outputs.branch }}
+
+    - name: Draft changelog
+      uses: release-drafter/release-drafter@v5
+      id: release-drafter
+      with:
+        commitish: ${{ steps.extract-branch-outputs.branch }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.bp-pat }}
+
+    - name: Set new release version
+      id: update-semver
+      env:
+        RD_RELEASE: ${{ steps.release-drafter.outputs.name }}
+      shell: bash
+      run: |
+        if [ ! -z $RD_RELEASE" ]; then
+          echo "version=$RD_RELEASE" >> $GITHUB_OUTPUT
+        else
+          echo "version=0.1.0" >> $GITHUB_OUTPUT
+        fi
