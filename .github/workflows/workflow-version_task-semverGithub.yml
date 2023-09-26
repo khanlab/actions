@@ -7,82 +7,35 @@ name: Bump version
 on:
   workflow_call:
     inputs:
-      project_metadata:
+      project-metadata:
         description: File containing project metadata (e.g. pyproject.toml)
         required: false
         default: pyproject.toml
         type: string
     secrets:
-      BP_PAT:
+      BP-PAT:
         required: true
 
 jobs:
   bump-version:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v3
+      - name: Grab previous version
+        id: semver
+        uses: ./.github/actions/action-version_task-updatePrereleaseVersion
         with:
-          ref: ${{ github.event.pull_request.base.ref }}
+          project-metadata: ${{ inputs.project-metadata }}
+          bp-pat: ${{ secrets.BP-PAT }}
 
-      - name: Update changelog
-        uses: release-drafter/release-drafter@v5
-        id: release-drafter
-        with:
-          commitish: ${{ github.event.pull_request.base.ref }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.BP_PAT }}
-
-      - name: Get previous release version
-        env:
-          METADATA: ${{ inputs.project_metadata }}
-        run: |
-          echo "PREV_VER=$(cat $METADATA | grep -o -E '(version\s=\s)([[:punct:]])([0-9]+\.[0-9]+\.[0-9]+.+)([[:punct:]])' | cut -d ' ' -f 3 | tr -d '"')" >> $GITHUB_ENV
-
-      - name: Get previous version
-        env:
-          PREV_VER: ${{ env.PREV_VER }}
-        run: |
-          if [[ "$PREV_VER" != *"-pre."* ]]; then
-            echo "OLD_BUMP=0" >> $GITHUB_ENV
-          else
-            echo "OLD_BUMP=$(echo $PREV_VER | cut -d '.' -f 4)" >> $GITHUB_ENV
-          fi
-
-      - name: Bump version
-        env:
-          BUMP_VER: ${{ env.OLD_BUMP }}
-        run: |
-          echo "NEW_BUMP=$(($BUMP_VER + 1))" >> $GITHUB_ENV
-
-      - name: Set new release version
-        env:
-          RD_RELEASE: ${{ steps.release-drafter.outputs.name }}
-        run: |
-          if [ ! -z "$RD_RELEASE" ]; then
-            echo "NEW_RELEASE=$RD_RELEASE" >> $GITHUB_ENV
-          else
-            echo "NEW_RELEASE=0.1.0" >> $GITHUB_ENV
-          fi
-
-      - name: Update version in ${{ inputs.project_metadata }}
+      - name: Update version in ${{ inputs.project-metadata }}
         uses: jacobtomlinson/gha-find-replace@v3
         with:
-          include: ${{ inputs.project_metadata }}
+          include: ${{ inputs.project-metadata }}
           find: version = "(?:([0-9]+\.[0-9]+\.[0-9]+.+)|([0-9]+\.[0-9]+\.[0-9]+))"
-          replace: version = "${{ env.NEW_RELEASE }}-pre.${{ env.NEW_BUMP }}"
+          replace: version = "${{ steps.semver.outputs.new-version }}"
 
-      - name: Commit updates
-        env:
-          APP_VERSION: ${{ env.NEW_RELEASE }}-pre.${{ env.NEW_BUMP }}
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git diff-index --quiet HEAD || git commit -m "Bump version to $APP_VERSION" -a
-
-      - name: Push changes
-        uses: CasperWA/push-protected@v2
+      - name: Commit changes
+        uses: ./.github/actions/action-version_task-commit
         with:
-          branch: ${{ github.event.pull_request.base.ref }}
-          token: ${{ secrets.BP_PAT }}
-          unprotect_reviews: true
+          version: ${{ steps.semver.outputs.new-version }}
+          bp-pat: ${{ secrets.BP-PAT }}

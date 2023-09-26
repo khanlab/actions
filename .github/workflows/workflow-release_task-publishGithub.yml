@@ -11,18 +11,13 @@ on:
         description: Comments
         required: false
         type: string
-      project_metadata:
+      project-metadata:
         description: File containing project metadata (e.g. pyproject.toml)
         required: false
         default: pyproject.toml
         type: string
-      pipeline_description:
-        description: Update pipeline description version
-        required: false
-        default: false
-        type: boolean
     secrets:
-      BP_PAT:
+      BP-PAT:
         required: true
 
 jobs:
@@ -34,69 +29,24 @@ jobs:
           echo "Author: ${{ github.triggering_actor }}"
           echo "Comments: ${{ inputs.comments }}"
 
-      - name: Extract branch
-        id: extract-branch
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-
-      - name: Checkout triggering branch
-        uses: actions/checkout@v3
+      - name: Grab release version
+        id: semver
+        uses: ./.github/actions/action-version_task-updateReleaseVersion
         with:
-          ref: ${{ steps.extract-branch.outputs.branch }}
+          project-metadata: ${{ inputs.project-metadata }}
+          bp-pat: ${{ secrets.BP-PAT }}
 
-      - name: Draft change log
-        uses: release-drafter/release-drafter@v5
-        id: release-drafter
-        with:
-          commitish: ${{ steps.extract-branch.outputs.branch }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set new release version
-        env:
-          RD_RELEASE: ${{ steps.release-drafter.outputs.name }}
-        run: |
-          if [ ! -z "$RD_RELEASE" ]; then
-            echo "NEW_RELEASE=$RD_RELEASE" >> $GITHUB_ENV
-          else
-            echo "NEW_RELEASE=0.1.0" >> $GITHUB_ENV
-          fi
-
-      - name: Update version in ${{ inputs.project_metadata }}
+      - name: Update version in ${{ inputs.project-metadata }}
         uses: jacobtomlinson/gha-find-replace@v3
         with:
-          include: ${{ inputs.project_metadata }}
+          include: ${{ inputs.project-metadata }}
           find: version = "(?:([0-9]+\.[0-9]+\.[0-9]+.+)|([0-9]+\.[0-9]+\.[0-9]+))"
-          replace: version = "${{ env.NEW_RELEASE }}"
+          replace: version = "${{ steps.semver.outputs.new-version }}"
 
-      - name: Update pipeline description
-        if: inputs.pipeline_description
-        uses: jacobtomlinson/gha-find-replace@v3
+      - name: Commit changes and publish changelog
+        uses: ./.github/actions/action-version_task-commit
         with:
-          include: "**/pipeline_description.json"
-          find: '"Version": "(?:([0-9]+\.[0-9]+\.[0-9]+.+)|([0-9]+\.[0-9]+\.[0-9]+))"'
-          replace: '"Version": "${{ env.NEW_RELEASE }}"'
-
-      - name: Commit updates
-        env:
-          LATEST_VERSION: ${{ env.NEW_RELEASE }}
-        run: |
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git diff-index --quiet HEAD || git commit -m "Bump version to $LATEST_VERSION" -a
-
-      - name: Push changes
-        uses: CasperWA/push-protected@v2
-        with:
-          token: ${{ secrets.BP_PAT }}
-          unprotect_reviews: true
-
-      - name: Publish change log
-        uses: release-drafter/release-drafter@v5
-        with:
-          commitish: ${{ steps.extract-branch.outputs.branch }}
-          publish: true
-          name: ${{ env.NEW_RELEASE }}
-          tag: v${{ env.NEW_RELEASE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.BP_PAT }}
+          version: ${{ steps.semver.outputs.new-version }}
+          bp-pat: ${{ secrets.BP-PAT }}
+          release: True
+          branch: ${{ steps.semver.outputs.branch }}
