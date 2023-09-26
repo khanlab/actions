@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Grab previous version
         id: semver
-        uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@maint/semver
+        uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@v0.2.0
         with:
           project-metadata: ${{ inputs.project-metadata }}
           bp-pat: ${{ secrets.BP-PAT }}
