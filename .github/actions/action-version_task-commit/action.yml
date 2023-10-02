@@ -46,7 +46,7 @@ runs:
 
     - name: Publish changelog
       uses: release-drafter/release-drafter@v5
-      if: ${{ inputs.release }} == 'true'
+      if: ${{ inputs.release == 'true' }}
       with:
         commitish: ${{ inputs.branch }}
         publish: true

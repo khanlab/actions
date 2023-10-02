@@ -22,7 +22,7 @@ jobs:
       contents: read
     steps:
       - name: Maximize space available for buiilding docker container
-        if: ${{ inputs.maximize_space }}
+        if: inputs.maximize_space
         uses: easimon/maximize-build-space@v8
         with:
           remove-android: "true" # android sdk
