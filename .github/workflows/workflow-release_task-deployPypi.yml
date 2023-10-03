@@ -41,7 +41,7 @@ jobs:
       # Use poetry to build and publish package
       - name: Install poetry
         uses: snok/install-poetry@v1
-        if: inputs.manager == "poetry"
+        if: inputs.manager == 'poetry'
         id: setup-poetry
         with:
           virtualenvs-create: true
