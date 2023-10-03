@@ -39,7 +39,7 @@ runs:
 
     - name: Install poetry
       uses: snok/install-poetry@v1
-      if: ${{ inputs.manager == "poetry" }} && ${{ steps.cached-manager.outputs.cache-hit != 'true' }}
+      if: ${{ inputs.manager == 'poetry' && steps.cached-manager.outputs.cache-hit != 'true' }}
       id: setup-poetry
       with:
         virtualenvs-create: true
@@ -62,11 +62,11 @@ runs:
 
     # Install dependencies with manager
     - name: Install dependencies
-      if: ${{ steps.setup-python.outputs.cache-hit  != 'true' }} && ${{ steps.setup-poetry.outcome }} == 'success' }}
+      if: ${{ steps.setup-python.outputs.cache-hit  != 'true' && steps.setup-poetry.outcome  == 'success' }}
       shell: bash
       run: poetry install --no-interaction --no-ansi --no-root --with dev
 
     - name: Install library
-      if: ${{ inputs.install-library == 'true' }} && ${{ steps.setup-poetry.outcome == 'success' }}
+      if: ${{ inputs.install-library == 'true' && steps.setup-poetry.outcome == 'success' }}
       shell: bash
       run: poetry install --no-interaction --no-ansi
