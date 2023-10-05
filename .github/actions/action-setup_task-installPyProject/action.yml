@@ -22,6 +22,10 @@ inputs:
     required: false
     default: false
     type: boolean
+  token:
+    description: Regular github token to be passed
+    required: true
+    type: string
 
 runs:
   using: composite
@@ -30,7 +34,8 @@ runs:
     - name: Clear cache
       if: github.event.pull_request.merged == true
       env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ inputs.token }}
+      shell: bash
       run: |
         gh extension install actions/gh-actions-cache
 
