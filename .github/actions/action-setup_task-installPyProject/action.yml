@@ -26,6 +26,31 @@ inputs:
 runs:
   using: composite
   steps:
+    # Caches have branch scope restrictions, needs to be deleted upon merge
+    - name: Clear cache
+      if: github.event.pull_request.merged == true
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh extension install actions/gh-actions-cache
+
+        # Get relevant branch info
+        REPO=${{ github.repository }}
+        BRANCH=refs/pull/${{ github.event.pull_request.number }}/merge
+
+        # Grab all caches created by PR
+        echo "Fetching list of cache keys..."
+        cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH | cut -f 1 )
+
+        # Set to not fail while deleting cache keyes
+        set +e 
+        echo "Deleting caches..."
+        for cacheKey in $cacheKeysForPR
+        do
+          gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
+        done
+        echo "Finished deleting caches created for $BRANCH"
+
     - name: Clone repo
       uses: actions/checkout@v3
 
@@ -57,12 +82,12 @@ runs:
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os}}-pip-${{ steps.setup-python.outputs.python-version }}
+        key: ${{ runner.os }}-pip-${{ steps.setup-python.outputs.python-version }}
         restore-keys: ${{ runner.os }}-pip-${{ steps.setup-python.outputs.python-version }}
 
     # Install dependencies with manager
     - name: Install dependencies
-      if: steps.setup-python.outputs.cache-hit  != 'true' && steps.setup-poetry.outcome  == 'success'
+      if: steps.setup-python.outputs.cache-hit != 'true' && steps.setup-poetry.outcome == 'success'
       shell: bash
       run: poetry install --no-interaction --no-ansi --no-root --with dev
 
