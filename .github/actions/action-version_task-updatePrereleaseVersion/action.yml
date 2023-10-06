@@ -71,7 +71,7 @@ runs:
       shell: bash
       run: |
         if [ ! -z "$RD_RELEASE" ]; then
-          echo "version=${RD_RELEASE}-pre-${BUMP_VER}" >> $GITHUB_OUTPUT
+          echo "version=${RD_RELEASE}-pre.${BUMP_VER}" >> $GITHUB_OUTPUT
         else
-          echo "version=0.1.0-pre-${BUMP_VER}" >> $GITHUB_OUTPUT
+          echo "version=0.1.0-pre.${BUMP_VER}" >> $GITHUB_OUTPUT
         fi
