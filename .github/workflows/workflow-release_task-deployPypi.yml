@@ -45,7 +45,6 @@ jobs:
         id: setup-poetry
         with:
           virtualenvs-create: true
-          virtualenvs-in-project: true
 
       - name: Build and publish
         if: steps.setup-poetry.outcome == 'success'
