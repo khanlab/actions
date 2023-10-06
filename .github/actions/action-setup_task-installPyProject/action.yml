@@ -25,6 +25,7 @@ inputs:
 
 runs:
   using: composite
+  steps:
     - name: Clone repo
       uses: actions/checkout@v3
 
@@ -39,7 +40,6 @@ runs:
     - name: Install poetry
       uses: snok/install-poetry@v1
       if: inputs.manager == 'poetry' && steps.cached-manager.outputs.cache-hit != 'true'
-      id: setup-poetry
       with:
         virtualenvs-create: true
         virtualenvs-in-project: true
@@ -52,20 +52,13 @@ runs:
         python-version: ${{ inputs.python-version }}
         cache: "${{ inputs.manager }}"
 
-    - name: Store pip cache
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ steps.setup-python.outputs.python-version }}
-        restore-keys: ${{ runner.os }}-pip-${{ steps.setup-python.outputs.python-version }}
-
-    # Install dependencies with manager
+    # Install dependencies with manager, if necessary
     - name: Install dependencies
-      if: steps.setup-python.outputs.cache-hit != 'true' && steps.setup-poetry.outcome == 'success'
+      if: inputs.manager == 'poetry' && steps.setup-python.outputs.cache-hit != 'true'
       shell: bash
       run: poetry install --no-interaction --no-ansi --no-root --with dev
 
     - name: Install library
-      if: inputs.install-library && steps.setup-poetry.outcome == 'success'
+      if: inputs.manager == 'poetry' && inputs.install-library
       shell: bash
       run: poetry install --no-interaction --no-ansi
