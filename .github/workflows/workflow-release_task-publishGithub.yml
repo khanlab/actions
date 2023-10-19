@@ -36,7 +36,7 @@ jobs:
 
       - name: Grab release version
         id: semver
-        uses: khanlab/actions/.github/actions/action-version_task-updateReleaseVersion@v0.2.1
+        uses: khanlab/actions/.github/actions/action-version_task-updateReleaseVersion@v0.2.2
         with:
           project-metadata: ${{ inputs.project-metadata }}
           bp-pat: ${{ secrets.BP-PAT }}
@@ -57,7 +57,7 @@ jobs:
           replace: '"Version": "${{ steps.semver.outputs.new-version }}"'
 
       - name: Commit changes and publish changelog
-        uses: khanlab/actions/.github/actions/action-version_task-commit@v0.2.1
+        uses: khanlab/actions/.github/actions/action-version_task-commit@v0.2.2
         with:
           version: ${{ steps.semver.outputs.new-version }}
           bp-pat: ${{ secrets.BP-PAT }}
