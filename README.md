@@ -37,7 +37,7 @@ An example of this can be seen below:
   uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@maint/semver
   with:
     project-metadata: ${{ inputs.project-metadata }}
-    bp-pat: ${{ secrets.BP-PAT }}
+    bp-pat: ${{ secrets.BP_PAT }}
 ```
 
 Naming of these files take inspiration from BIDS, but with a camel-case
