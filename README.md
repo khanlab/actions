@@ -29,12 +29,13 @@ actions. If using a composite action within a reusable workflow, the
 `org/repo` must be specified, otherwise downstream usage will assume the
 composite action is stored within the downstream repository.
 
-An example of this can be seen below:
+An example of this can be seen below (note that this task always uses the
+version of the workflow found on the `main` branch):
 
 ```yaml
 - name: Grab previous version
   id: semver
-  uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@maint/semver
+  uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@main
   with:
     project-metadata: ${{ inputs.project-metadata }}
     bp-pat: ${{ secrets.BP_PAT }}
@@ -44,3 +45,7 @@ Naming of these files take inspiration from BIDS, but with a camel-case
 value scheme. Workflows are defined by the `workflow` entity, while composite
 actions are defined by the `action` entity. The intended task is defined by
 `task`.
+
+**NOTE: Prior to release, ensure all self-created actions within this repo**
+**(i.e. those within the `actions` directory) are set to the next anticipated**
+**version.**
