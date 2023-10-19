@@ -34,7 +34,7 @@ runs:
       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
 
     - name: Checkout triggering branch
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ steps.extract-branch.outputs.branch }}
 
