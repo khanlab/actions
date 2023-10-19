@@ -5,6 +5,8 @@
 #   - main branch is protected
 name: Bump version
 on:
+  pull_request_target:
+    types: [closed]
   workflow_call:
     inputs:
       project-metadata:
