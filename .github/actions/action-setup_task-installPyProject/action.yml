@@ -55,7 +55,7 @@ runs:
     - name: Install dependencies
       if: inputs.manager == 'poetry' && steps.setup-python.outputs.cache-hit != 'true'
       shell: bash
-      run: poetry install --no-interaction --no-ansi --no-root --with dev
+      run: poetry install --no-interaction --no-ansi --no-root --with dev --all-extras
 
     - name: Install library
       if: inputs.manager == 'poetry' && inputs.install-library
