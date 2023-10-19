@@ -8,11 +8,6 @@
 name: Get previous project version
 description: Get the last version from project metadata for release
 inputs:
-  project-metadata:
-    description: Metadata file containing project version (e.g. pyproject.toml)
-    required: false
-    default: pyproject.toml
-    type: string
   bp-pat:
     description: Personal access token to update branch protection
     required: true

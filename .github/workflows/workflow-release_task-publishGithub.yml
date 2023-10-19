@@ -38,7 +38,6 @@ jobs:
         id: semver
         uses: khanlab/actions/.github/actions/action-version_task-updateReleaseVersion@v0.2.2
         with:
-          project-metadata: ${{ inputs.project-metadata }}
           bp-pat: ${{ secrets.BP-PAT }}
 
       - name: Update version in ${{ inputs.project-metadata }}
