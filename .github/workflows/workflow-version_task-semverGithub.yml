@@ -18,7 +18,7 @@ on:
         default: false
         type: boolean
     secrets:
-      BP-PAT:
+      BP_PAT:
         required: true
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
         uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@v0.2.2
         with:
           project-metadata: ${{ inputs.project-metadata }}
-          bp-pat: ${{ secrets.BP-PAT }}
+          bp-pat: ${{ secrets.BP_PAT }}
 
       - name: Update version in ${{ inputs.project-metadata }}
         uses: jacobtomlinson/gha-find-replace@v3
@@ -51,4 +51,4 @@ jobs:
         uses: khanlab/actions/.github/actions/action-version_task-commit@v0.2.2
         with:
           version: ${{ steps.semver.outputs.new-version }}
-          bp-pat: ${{ secrets.BP-PAT }}
+          bp-pat: ${{ secrets.BP_PAT }}
