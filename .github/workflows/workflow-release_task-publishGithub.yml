@@ -5,6 +5,22 @@
 #   - main branch is protected
 name: Release package on GH
 on:
+  workflow_dispatch:
+    inputs:
+      comments:
+        description: Comments
+        required: false
+        type: string
+      project-metadata:
+        description: File containing project metadata (e.g. pyproject.toml)
+        required: false
+        default: pyproject.toml
+        type: string
+      pipeline-description:
+        description: Boolean flag to update pipeline_description.json
+        required: false
+        default: false
+        type: boolean
   workflow_call:
     inputs:
       comments:
