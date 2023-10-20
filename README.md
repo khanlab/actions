@@ -34,7 +34,7 @@ An example of this can be seen below:
 ```yaml
 - name: Grab previous version
   id: semver
-  uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@maint/semver
+  uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@v0.2.2
   with:
     project-metadata: ${{ inputs.project-metadata }}
     bp-pat: ${{ secrets.BP-PAT }}
@@ -44,3 +44,7 @@ Naming of these files take inspiration from BIDS, but with a camel-case
 value scheme. Workflows are defined by the `workflow` entity, while composite
 actions are defined by the `action` entity. The intended task is defined by
 `task`.
+
+_NOTE: You can test your workflow locally using a tool like_
+_[nektos/act](https://github.com/nektos/act). For security reasons, it is_
+_recommended to include your secrets in an external file."_
