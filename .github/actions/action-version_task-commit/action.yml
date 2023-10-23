@@ -10,20 +10,16 @@ inputs:
   version:
     description: New / updated project version
     required: false
-    type: string
   bp-pat:
     description: Personal access token to update branch protection
     required: true
-    type: string
   release:
-    description: Boolean flag to indicate part of Github release workflow
+    description: Boolean string to indicate part of Github release workflow
     required: false
-    default: false
-    type: boolean
+    default: "false"
   branch:
     description: Triggering branch to checkout
     required: false
-    type: string
 
 runs:
   using: composite
@@ -46,7 +42,7 @@ runs:
 
     - name: Publish changelog
       uses: release-drafter/release-drafter@v5
-      if: inputs.release == true
+      if: inputs.release == 'true'
       with:
         commitish: ${{ inputs.branch }}
         publish: true
