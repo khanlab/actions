@@ -76,5 +76,5 @@ jobs:
         with:
           version: ${{ steps.semver.outputs.new-version }}
           bp-pat: ${{ secrets.BP_PAT }}
-          release: True
+          release: "true"
           branch: ${{ steps.semver.outputs.branch }}
