@@ -10,20 +10,18 @@ inputs:
   branch:
     description: Branch to commit changes to
     required: true
-    type: string
   commit-msg:
     description: Commit message
     required: true
-    type: string
   bp-pat:
     description: Personal access token to update branch protection
     required: true
-    type: string
 
 runs:
-  using: composite:
+  using: composite
   steps:
   - name: Check changes
+    shell: bash
     run: |
       gh_status=$(git status --porcelain)
       if [ -z "$gh_status" ]; then
@@ -34,6 +32,7 @@ runs:
   
   - name: Commit changes
     if: env.modified
+    shell: bash
     run: |
       git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
       git config --local user.name "github-actions[bot]"

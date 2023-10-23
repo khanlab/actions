@@ -6,22 +6,18 @@ inputs:
   python-version:
     description: Python version to setup
     required: true
-    type: string
   cache-id:
     description: Reference id to define cache
     required: false
     default: ${{ github.event.pull_request.id || github.event.after }}
-    type: string
   manager:
     description: Dependency manager used (e.g. poetry)
     required: false
     default: "poetry"
-    type: string
   install-library:
-    description: Indicate whether project library should be installed
+    description: Boolean string to indicate if project library should be installed
     required: false
-    default: false
-    type: boolean
+    default: "false"
 
 runs:
   using: composite
