@@ -47,7 +47,7 @@ runs:
         RD_RELEASE: ${{ steps.release-drafter.outputs.name }}
       shell: bash
       run: |
-        if [ ! -z $RD_RELEASE" ]; then
+        if [ ! -z "$RD_RELEASE" ]; then
           echo "version=$RD_RELEASE" >> $GITHUB_OUTPUT
         else
           echo "version=0.1.0" >> $GITHUB_OUTPUT
