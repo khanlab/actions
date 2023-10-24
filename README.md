@@ -34,7 +34,7 @@ An example of this can be seen below:
 ```yaml
 - name: Grab previous version
   id: semver
-  uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@v0.3.0
+  uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@v0.3.1
   with:
     project-metadata: ${{ inputs.project-metadata }}
     bp-pat: ${{ secrets.BP_PAT }}

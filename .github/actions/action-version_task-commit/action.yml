@@ -9,21 +9,10 @@ description: Push new changes / updates to a protected branch
 inputs:
   version:
     description: New / updated project version
-    required: false
-    type: string
+    required: true
   bp-pat:
     description: Personal access token to update branch protection
     required: true
-    type: string
-  release:
-    description: Boolean flag to indicate part of Github release workflow
-    required: false
-    default: false
-    type: boolean
-  branch:
-    description: Triggering branch to checkout
-    required: false
-    type: string
 
 runs:
   using: composite
@@ -43,14 +32,3 @@ runs:
         branch: ${{ github.event.pull_request.base.ref }}
         token: ${{ inputs.bp-pat }}
         unprotect_reviews: true
-
-    - name: Publish changelog
-      uses: release-drafter/release-drafter@v5
-      if: inputs.release == true
-      with:
-        commitish: ${{ inputs.branch }}
-        publish: true
-        name: ${{ inputs.version }}
-        tag: v${{ inputs.version }}
-      env:
-        GITHUB_TOKEN: ${{ inputs.bp-pat }}

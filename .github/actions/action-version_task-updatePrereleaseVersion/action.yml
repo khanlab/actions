@@ -12,11 +12,9 @@ inputs:
     description: Metadata file containing project version (e.g. pyproject.toml)
     required: false
     default: pyproject.toml
-    type: string
   bp-pat:
     description: Personal access token to update branch protection
     required: true
-    type: string
 outputs:
   new-version:
     description: Next pre-release version

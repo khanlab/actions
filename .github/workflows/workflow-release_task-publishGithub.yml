@@ -52,7 +52,7 @@ jobs:
 
       - name: Grab release version
         id: semver
-        uses: khanlab/actions/.github/actions/action-version_task-updateReleaseVersion@v0.3.0
+        uses: khanlab/actions/.github/actions/action-version_task-updateReleaseVersion@v0.3.1
         with:
           bp-pat: ${{ secrets.BP_PAT }}
 
@@ -71,10 +71,17 @@ jobs:
           find: '"Version": "(?:([0-9]+\.[0-9]+\.[0-9]+.+)|([0-9]+\.[0-9]+\.[0-9]+))"'
           replace: '"Version": "${{ steps.semver.outputs.new-version }}"'
 
-      - name: Commit changes and publish changelog
-        uses: khanlab/actions/.github/actions/action-version_task-commit@v0.3.0
+      - name: Commit changes to protected branch
+        uses: khanlab/actions/.github/actions/action-version_task-commit@v0.3.1
         with:
           version: ${{ steps.semver.outputs.new-version }}
           bp-pat: ${{ secrets.BP_PAT }}
-          release: True
-          branch: ${{ steps.semver.outputs.branch }}
+
+      - name: Publish changelog
+        uses: release-drafter/release-drafter@v5
+        with:
+          name: ${{ steps.semver.outputs.new-version }}
+          tag: v${{ steps.semver.outputs.new-version }}
+          publish: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.BP_PAT }}
