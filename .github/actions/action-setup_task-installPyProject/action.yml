@@ -24,6 +24,8 @@ runs:
   steps:
     - name: Clone repo
       uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.head.sha || github.base_ref }}
 
     # Setup & configure dependency manager
     - name: Cache manager installation
