@@ -1,6 +1,6 @@
 [project]
 name = "khanlab_actions"
-version = "0.3.2-pre.1"
+version = "0.3.2"
 description = "Reusable Github actions workflows"
 authors = [{ name = "Jason Kai", email = "tkai@uwo.ca" }]
 readme = "README.md"
