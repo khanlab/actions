@@ -18,6 +18,10 @@ inputs:
     description: Boolean string to indicate if project library should be installed
     required: false
     default: "false"
+outputs:
+  python-version:
+    description: "Resolved python version as reported by setup-python"
+    value: ${{ steps.setup-python.outputs.python-version }}
 
 runs:
   using: composite
