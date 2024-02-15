@@ -43,7 +43,7 @@ jobs:
     steps:
       - name: Grab previous version
         id: semver
-        uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@v0.3.1
+        uses: khanlab/actions/.github/actions/action-version_task-updatePrereleaseVersion@v0.3.4
         with:
           project-metadata: ${{ inputs.project-metadata }}
           bp-pat: ${{ secrets.BP_PAT }}
@@ -64,7 +64,7 @@ jobs:
           replace: '"Version": "${{ steps.semver.outputs.new-version }}"'
 
       - name: Commit changes
-        uses: khanlab/actions/.github/actions/action-version_task-commit@v0.3.1
+        uses: khanlab/actions/.github/actions/action-version_task-commit@v0.3.4
         with:
           version: ${{ steps.semver.outputs.new-version }}
           bp-pat: ${{ secrets.BP_PAT }}
