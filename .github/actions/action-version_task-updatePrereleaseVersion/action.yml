@@ -24,12 +24,12 @@ runs:
   using: composite
   steps:
     - name: Checkout branch
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.event.pull_request.base.ref }}
 
     - name: Update changelog
-      uses: release-drafter/release-drafter@v5
+      uses: release-drafter/release-drafter@v6
       id: release-drafter
       with:
         commitish: ${{ github.event.pull_request.base.ref }}
