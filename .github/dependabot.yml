@@ -1,5 +1,6 @@
 version: 2
 updates:
+  # Workflow
   - package-ecosystem: "github-actions"
     # Workflow files stored in the default location of `.github/workflows`. 
     # (You don't need to specify `/.github/workflows` for `directory`. 
@@ -9,6 +10,52 @@ updates:
     schedule:
       interval: "monthly"
     # Group to submit a single PR if possible
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  # Actions
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/action-general_task-commitProtected"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+  
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/action-setup_task-installPyProject"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/action-version_task-commit"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/action-version_task-updatePrereleaseVersion"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/action-version_task-updateReleaseVersion"
+    schedule:
+      interval: "monthly"
     groups:
       github-actions:
         patterns:
