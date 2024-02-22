@@ -60,7 +60,7 @@ runs:
 
     # Setup & configure dependency manager
     - name: Cache manager installation
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       id: cached-manager
       with:
         path: ~/.local
@@ -78,7 +78,7 @@ runs:
       run: echo "${{ inputs.cache-key }}" >> .git/x-gh-cache-key
 
     - name: Setup python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       id: setup-python
       with:
         python-version: ${{ inputs.python-version }}
