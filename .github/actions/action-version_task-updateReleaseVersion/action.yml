@@ -28,12 +28,12 @@ runs:
       run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
 
     - name: Checkout triggering branch
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ steps.extract-branch.outputs.branch }}
 
     - name: Draft changelog
-      uses: release-drafter/release-drafter@v5
+      uses: release-drafter/release-drafter@v6
       id: release-drafter
       with:
         commitish: ${{ steps.extract-branch-outputs.branch }}
