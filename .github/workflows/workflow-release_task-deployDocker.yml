@@ -66,7 +66,7 @@ jobs:
             latest=auto
 
       - name: Build and push Docker container
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
