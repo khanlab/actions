@@ -16,6 +16,12 @@ inputs:
   repository_owner:
     description: "GitHub repository owner"
     required: true
+  OS_APPLICATION_CREDENTIAL_ID:
+    description: "Arbutus credential id"
+    required: true
+  OS_APPLICATION_CREDENTIAL_SECRET:
+    description: "Arbutus credential secret"
+    required: true
 outputs:
   vm_id:
     description: "The OpenStack VM ID"
@@ -31,8 +37,8 @@ runs:
     OS_AUTH_URL:                       "https://arbutus.cloud.computecanada.ca:5000/v3"
     OS_USERNAME:                       "djay"
     OS_USER_DOMAIN_NAME:               "CCDB"
-    OS_APPLICATION_CREDENTIAL_ID:      ${{ secrets.OS_APPLICATION_CREDENTIAL_ID }}
-    OS_APPLICATION_CREDENTIAL_SECRET: "${{ secrets.OS_APPLICATION_CREDENTIAL_SECRET }}"
+    OS_APPLICATION_CREDENTIAL_ID:      ${{ inputs.OS_APPLICATION_CREDENTIAL_ID }}
+    OS_APPLICATION_CREDENTIAL_SECRET: "${{ inputs.OS_APPLICATION_CREDENTIAL_SECRET }}"
   steps:
     - name: Install OpenStack & Tools
       run: |
