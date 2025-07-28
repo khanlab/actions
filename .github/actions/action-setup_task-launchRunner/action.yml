@@ -1,0 +1,101 @@
+name: Launch Ephemeral Runner
+description: |
+  Launch an OpenStack VM, register a self-hosted runner for PR X, and 
+  output its VM_ID and runner_token.
+
+inputs:
+  pr_number:
+    description: "PR number to test"
+    required: true
+  respository:
+    decription: "Github repository (owner/name)"
+    required: true
+  repository_name:
+    description: "GitHub repository name"
+    required: true
+  repository_owner:
+    description: "GitHub repository owner"
+    required: true
+outputs:
+  vm_id:
+    description: "The OpenStack VM ID"
+    value: ${{ steps.launch.outputs.vm_id }}
+  runner_token:
+    description: "GitHub runner registration token"
+    value: ${{ steps.token.outputs.runner_token }}
+
+runs:
+  using: composite
+  env:
+    OS_AUTH_TYPE:                      "v3applicationcredential"
+    OS_AUTH_URL:                       "https://arbutus.cloud.computecanada.ca:5000/v3"
+    OS_USERNAME:                       "djay"
+    OS_USER_DOMAIN_NAME:               "CCDB"
+    OS_APPLICATION_CREDENTIAL_ID:      ${{ secrets.OS_APPLICATION_CREDENTIAL_ID }}
+    OS_APPLICATION_CREDENTIAL_SECRET: "${{ secrets.OS_APPLICATION_CREDENTIAL_SECRET }}"
+  steps:
+    - name: Install OpenStack & Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3-openstackclient jq gettext-base
+
+    - name: Validate PAT
+      run: |
+        status=$(curl -s -o /dev/null -w "%{http_code}" \
+          -H "Authorization: Bearer ${{ secrets.RUNNER_PAT }}" \
+          https://api.github.com/user)
+        if [ "$status" -ne 200 ]; then
+          echo "❌ Invalid PAT (HTTP $status)" >&2
+          exit 1
+        fi
+
+    - name: Get runner registration token
+      id: token
+      run: |
+        response=$(curl -sX POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.RUNNER_PAT }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          https://api.github.com/repos/${{ inputs.repository }}/actions/runners/registration-token)
+        token=$(echo "$response" | jq -r .token)
+        echo "token=$token" >> $GITHUB_OUTPUT
+
+    - name: Generate cloud-init
+      run: |
+        export PR_NUMBER=${{ inputs.pr_number }}
+        export GITHUB_RUNNER_TOKEN=${{ steps.token.outputs.token }}
+        export GITHUB_REPO_OWNER=${{ inputs.repository_owner }}
+        export GITHUB_REPO_NAME=${{ inputs.repository_name }}
+        # Only substitute the four env vars, keep all other ${…} intact
+        envsubst '$PR_NUMBER $GITHUB_RUNNER_TOKEN $GITHUB_REPO_OWNER $GITHUB_REPO_NAME' \
+          < .github/templates/cloud-init.yml > cloud-init.generated.yml
+
+    - name: Launch VM
+      id: launch
+      run: |
+        openstack server create \
+          --image "Ubuntu-22.04.4-Jammy-x64-2024-06" \
+          --flavor c16-60gb-576 \
+          --network def-akhanf-dev-network \
+          --user-data cloud-init.generated.yml \
+          ${{ inputs.repository_name }}-pr-${{ inputs.pr_number }}
+        VM_ID=$(openstack server list --name ${{ inputs.repository_name }}-pr-${{ inputs.pr_number }} -f value -c ID)
+        echo "vm_id=$VM_ID" >> $GITHUB_OUTPUT
+
+    - name: Wait for runner registration
+      run: |
+        echo "Waiting for runner to appear..."
+        for i in {1..60}; do
+          runners=$(curl -s \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.RUNNER_PAT }}" \
+            https://api.github.com/repos/${{ inputs.repository }}/actions/runners \
+            | jq -r '.runners[].name')
+          if echo "$runners" | grep -q "${{ inputs.repository_name }}-pr-${{ inputs.pr_number }}"; then
+            echo "Runner registered."
+            exit 0
+          fi
+          sleep 10
+        done
+        echo "Runner did not register in time." >&2
+        exit 1
