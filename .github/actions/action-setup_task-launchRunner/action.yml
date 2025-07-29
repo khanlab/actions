@@ -2,13 +2,12 @@ name: Launch Ephemeral Runner
 description: |
   Launch an OpenStack VM, register a self-hosted runner for PR X, and 
   output its VM_ID and runner_token.
-
 inputs:
   pr_number:
     description: "PR number to test"
     required: true
-  respository:
-    decription: "Github repository (owner/name)"
+  repository:
+    description: "Github repository (owner/name)"
     required: true
   repository_name:
     description: "GitHub repository name"
@@ -29,13 +28,12 @@ outputs:
   vm_id:
     description: "The OpenStack VM ID"
     value: ${{ steps.launch.outputs.vm_id }}
-  runner_token:
+  token:
     description: "GitHub runner registration token"
-    value: ${{ steps.token.outputs.runner_token }}
+    value: ${{ steps.token.outputs.token }}
 
 runs:
   using: composite
-
   steps:
     - name: Export OpenStack credentials
       shell: bash
