@@ -31,7 +31,7 @@ write_files:
         --url "https://github.com/${GH_OWNER}/${GH_REPO}" \
         --token "${GH_TOKEN}" \
         --labels "${LABELS}" \
-        --name "runner-pr-${PR_NUMBER}"
+        --name "${GH_REPO}-pr-${PR_NUMBER}"
 
 runcmd:
   - apt-get update
