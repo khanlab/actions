@@ -46,11 +46,13 @@ runs:
         echo "OS_APPLICATION_CREDENTIAL_SECRET=${{ inputs.OS_APPLICATION_CREDENTIAL_SECRET }}" >> $GITHUB_ENV
 
     - name: Install OpenStack & Tools
+      shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install -y python3-openstackclient jq gettext-base
 
     - name: Validate PAT
+      shell: bash
       run: |
         status=$(curl -s -o /dev/null -w "%{http_code}" \
           -H "Authorization: Bearer ${{ inputs.RUNNER_PAT }}" \
@@ -61,6 +63,7 @@ runs:
         fi
 
     - name: Get runner registration token
+      shell: bash
       id: token
       run: |
         response=$(curl -sX POST \
@@ -72,6 +75,7 @@ runs:
         echo "token=$token" >> $GITHUB_OUTPUT
 
     - name: Generate cloud-init
+      shell: bash
       run: |
         export PR_NUMBER=${{ inputs.pr_number }}
         export GITHUB_RUNNER_TOKEN=${{ steps.token.outputs.token }}
@@ -83,6 +87,7 @@ runs:
 
     - name: Launch VM
       id: launch
+      shell: bash
       run: |
         openstack server create \
           --image "Ubuntu-22.04.4-Jammy-x64-2024-06" \
@@ -94,6 +99,7 @@ runs:
         echo "vm_id=$VM_ID" >> $GITHUB_OUTPUT
 
     - name: Wait for runner registration
+      shell: bash
       run: |
         echo "Waiting for runner to appear..."
         for i in {1..60}; do
