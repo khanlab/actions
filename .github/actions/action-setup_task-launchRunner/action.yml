@@ -83,7 +83,7 @@ runs:
         export GITHUB_REPO_NAME=${{ inputs.repository_name }}
         # Only substitute the four env vars, keep all other ${…} intact
         envsubst '$PR_NUMBER $GITHUB_RUNNER_TOKEN $GITHUB_REPO_OWNER $GITHUB_REPO_NAME' \
-          < .github/templates/cloud-init.yml > cloud-init.generated.yml
+          < ${GITHUB_ACTION_PATH}/../templates/cloud-init.yml > cloud-init.generated.yml
 
     - name: Launch VM
       id: launch
