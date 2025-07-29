@@ -19,9 +19,6 @@ outputs:
   vm_id:
     description: "The OpenStack VM ID"
     value: ${{ steps.launch.outputs.vm_id }}
-  token:
-    description: "GitHub runner registration token"
-    value: ${{ steps.token.outputs.token }}
 
 runs:
   using: composite
