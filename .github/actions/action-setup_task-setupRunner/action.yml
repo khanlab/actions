@@ -15,15 +15,6 @@ inputs:
   repository_owner:
     description: "GitHub repository owner"
     required: true
-  OS_APPLICATION_CREDENTIAL_ID:
-    description: "Arbutus credential id"
-    required: true
-  OS_APPLICATION_CREDENTIAL_SECRET:
-    description: "Arbutus credential secret"
-    required: true
-  RUNNER_PAT:
-    description: "Personal Access Token"
-    required: true
 outputs:
   vm_id:
     description: "The OpenStack VM ID"
@@ -38,12 +29,13 @@ runs:
     - name: Export OpenStack credentials
       shell: bash
       run: |
-        echo "OS_AUTH_TYPE=v3applicationcredential" >> $GITHUB_ENV
-        echo "OS_AUTH_URL=https://arbutus.cloud.computecanada.ca:5000/v3" >> $GITHUB_ENV
-        echo "OS_USERNAME=djay" >> $GITHUB_ENV
-        echo "OS_USER_DOMAIN_NAME=CCDB" >> $GITHUB_ENV
-        echo "OS_APPLICATION_CREDENTIAL_ID=${{ inputs.OS_APPLICATION_CREDENTIAL_ID }}" >> $GITHUB_ENV
-        echo "OS_APPLICATION_CREDENTIAL_SECRET=${{ inputs.OS_APPLICATION_CREDENTIAL_SECRET }}" >> $GITHUB_ENV
+        echo "OS_AUTH_TYPE=$OS_AUTH_TYPE" >> $GITHUB_ENV
+        echo "OS_AUTH_URL=$OS_AUTH_URL" >> $GITHUB_ENV
+        echo "OS_USERNAME=$OS_USERNAME" >> $GITHUB_ENV
+        echo "OS_USER_DOMAIN_NAME=$OS_USER_DOMAIN_NAME" >> $GITHUB_ENV
+        echo "OS_APPLICATION_CREDENTIAL_ID=$OS_APPLICATION_CREDENTIAL_ID" >> $GITHUB_ENV
+        echo "OS_APPLICATION_CREDENTIAL_SECRET=$OS_APPLICATION_CREDENTIAL_SECRET" >> $GITHUB_ENV
+        echo "RUNNER_PAT=$RUNNER_PAT" >> $GITHUB_ENV
 
     - name: Install OpenStack & Tools
       shell: bash
@@ -55,7 +47,7 @@ runs:
       shell: bash
       run: |
         status=$(curl -s -o /dev/null -w "%{http_code}" \
-          -H "Authorization: Bearer ${{ inputs.RUNNER_PAT }}" \
+          -H "Authorization: Bearer ${RUNNER_PAT}" \
           https://api.github.com/user)
         if [ "$status" -ne 200 ]; then
           echo "❌ Invalid PAT (HTTP $status)" >&2
@@ -68,7 +60,7 @@ runs:
       run: |
         response=$(curl -sX POST \
           -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ inputs.RUNNER_PAT }}" \
+          -H "Authorization: Bearer ${RUNNER_PAT}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           https://api.github.com/repos/${{ inputs.repository }}/actions/runners/registration-token)
         token=$(echo "$response" | jq -r .token)
@@ -105,7 +97,7 @@ runs:
         for i in {1..60}; do
           runners=$(curl -s \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ inputs.RUNNER_PAT }}" \
+            -H "Authorization: Bearer ${RUNNER_PAT}" \
             https://api.github.com/repos/${{ inputs.repository }}/actions/runners \
             | jq -r '.runners[].name')
           if echo "$runners" | grep -q "${{ inputs.repository_name }}-pr-${{ inputs.pr_number }}"; then
