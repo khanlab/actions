@@ -79,7 +79,7 @@ runs:
         if [ -n "$runner_id" ]; then
           echo "Deleting runner ID $runner_id from ${{ inputs.repository }} …"
           curl -X DELETE \
-            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Authorization: token $RUNNER_PAT" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${{ inputs.repository }}/actions/runners/$runner_id
         else
