@@ -31,11 +31,13 @@ runs:
         echo "RUNNER_PAT=$RUNNER_PAT" >> $GITHUB_ENV
 
     - name: Install Openstack CLI & tools
+      shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install -y python3-openstackclient jq gettext-base
 
     - name: Deregister runner
+      shell: bash
       env:
         VM_ID: ${{ inputs.vm_id }}
       run: |
@@ -60,10 +62,12 @@ runs:
         openstack server delete "$VM_ID" || true
 
     - name: Delete VM fallback
+      shell: bash
       run: |
         openstack server delete ${{ inputs.vm_id }} || true
 
     - name: Remove runner registration from GitHub
+      shell: bash
       run: |
         runner_id=$(curl -sS \
           -H "Authorization: token $RUNNER_PAT" \
