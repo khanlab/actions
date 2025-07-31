@@ -27,10 +27,12 @@ on:
       RUNNER_PAT:
         required: true
     outputs:
-      vm_id: ${{ jobs.launch-runner.outputs.vm_id }}
+      vm_id:
+        description: "Openstack VM ID"
+        value: ${{ jobs.launch.outputs.vm_id }}
 
 jobs:
-  launch-runner:
+  launch:
     runs-on: ubuntu-latest
     env:
       OS_AUTH_TYPE:                     v3applicationcredential
