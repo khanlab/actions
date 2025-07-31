@@ -14,7 +14,7 @@ write_files:
       GH_OWNER="${GITHUB_REPO_OWNER}"
       GH_REPO="${GITHUB_REPO_NAME}"
       GH_TOKEN="${GITHUB_RUNNER_TOKEN}"
-      LABELS="ephemeral,wet-run"
+      LABELS="self-hosted, ${GH_REPO}-pr-${PR_NUMBER}"
 
       mkdir -p "$RUNNER_DIR"
       cd "$RUNNER_DIR"
