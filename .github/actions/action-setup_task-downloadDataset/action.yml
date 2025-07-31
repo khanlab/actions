@@ -19,3 +19,4 @@ runs:
         cd ${{ inputs.destination_dir }}
         wget -q -O dataset.zip "${{ inputs.download_url }}"
         unzip -q dataset.zip
+        rm dataset.zip
