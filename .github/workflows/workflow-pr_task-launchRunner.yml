@@ -22,6 +22,8 @@ on:
         required: true
       RUNNER_PAT:
         required: true
+    outputs:
+      vm_id: ${{ jobs.launch-runner.outputs.vm_id }}
 
 jobs:
   launch-runner:
