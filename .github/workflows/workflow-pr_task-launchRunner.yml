@@ -1,39 +1,42 @@
 name: Launch Ephemeral Runner
-description: |
-  Launch an OpenStack VM, register a self-hosted runner for PR X, and 
-  output its VM_ID and runner_token.
-inputs:
-  pr_number:
-    description: "PR number to test"
-    required: true
-  repository:
-    description: "Github repository (owner/name)"
-    required: true
-  repository_name:
-    description: "GitHub repository name"
-    required: true
-  repository_owner:
-    description: "GitHub repository owner"
-    required: true
-outputs:
-  vm_id:
-    description: "The OpenStack VM ID"
-    value: ${{ steps.launch.outputs.vm_id }}
 
-runs:
-  using: composite
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        description: "PR number to test"
+        required: true
+      repository:
+        description: "Github repository (owner/name)"
+        required: true
+      repository_name:
+        description: "GitHub repository name"
+        required: true
+      repository_owner:
+        description: "GitHub repository owner"
+        required: true
+    secrets:
+      OS_APPLICATION_CREDENTIAL_ID:
+        required: true
+      OS_APPLICATION_CREDENTIAL_SECRET:
+        required: true
+      RUNNER_PAT:
+        required: true
+
+jobs:
+  launch-runner:
+    runs-on: ubuntu-latest
+  env:
+    OS_AUTH_TYPE:                     v3applicationcredential
+    OS_AUTH_URL:                      https://arbutus.cloud.computecanada.ca:5000/v3
+    OS_USERNAME:                      djay
+    OS_USER_DOMAIN_NAME:              CCDB
+    OS_APPLICATION_CREDENTIAL_ID:     ${{ secrets.OS_APPLICATION_CREDENTIAL_ID }}
+    OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.OS_APPLICATION_CREDENTIAL_SECRET }}
+    RUNNER_PAT:                       ${{ secrets.RUNNER_PAT }}
+  outputs:
+    vm_id:                            ${{ steps.launch.outputs.vm_id }}
   steps:
-    - name: Export OpenStack credentials
-      shell: bash
-      run: |
-        echo "OS_AUTH_TYPE=$OS_AUTH_TYPE" >> $GITHUB_ENV
-        echo "OS_AUTH_URL=$OS_AUTH_URL" >> $GITHUB_ENV
-        echo "OS_USERNAME=$OS_USERNAME" >> $GITHUB_ENV
-        echo "OS_USER_DOMAIN_NAME=$OS_USER_DOMAIN_NAME" >> $GITHUB_ENV
-        echo "OS_APPLICATION_CREDENTIAL_ID=$OS_APPLICATION_CREDENTIAL_ID" >> $GITHUB_ENV
-        echo "OS_APPLICATION_CREDENTIAL_SECRET=$OS_APPLICATION_CREDENTIAL_SECRET" >> $GITHUB_ENV
-        echo "RUNNER_PAT=$RUNNER_PAT" >> $GITHUB_ENV
-
     - name: Install OpenStack & Tools
       shell: bash
       run: |
@@ -72,7 +75,7 @@ runs:
         export GITHUB_REPO_NAME=${{ inputs.repository_name }}
         # Only substitute the four env vars, keep all other ${…} intact
         envsubst '$PR_NUMBER $GITHUB_RUNNER_TOKEN $GITHUB_REPO_OWNER $GITHUB_REPO_NAME' \
-          < ${GITHUB_ACTION_PATH}/../../templates/cloud-init.yml > cloud-init.generated.yml
+          < ${GITHUB_ACTION_PATH}/../templates/cloud-init.yml > cloud-init.generated.yml
 
     - name: Launch VM
       id: launch
