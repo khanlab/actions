@@ -11,14 +11,6 @@ on:
         description: "Github repository (owner/name)"
         required: true
         type: string
-      repository_name:
-        description: "GitHub repository name"
-        required: true
-        type: string
-      repository_owner:
-        description: "GitHub repository owner"
-        required: true
-        type: string
     secrets:
       OS_APPLICATION_CREDENTIAL_ID:
         required: true
@@ -45,6 +37,14 @@ jobs:
     outputs:
       vm_id:                            ${{ steps.launch.outputs.vm_id }}
     steps:
+      - name: Extract repo owner and name
+        id: split
+        shell: bash
+        run: |
+          IFS='/' read -r owner name <<< "${{ inputs.repository }}"
+          echo "owner=$owner" >> $GITHUB_OUTPUT
+          echo "name=$name" >> $GITHUB_OUTPUT
+
       - name: Checkout reusable workflow repo
         uses: actions/checkout@v4
         with:
@@ -86,8 +86,8 @@ jobs:
         run: |
           export PR_NUMBER=${{ inputs.pr_number }}
           export GITHUB_RUNNER_TOKEN=${{ steps.token.outputs.token }}
-          export GITHUB_REPO_OWNER=${{ inputs.repository_owner }}
-          export GITHUB_REPO_NAME=${{ inputs.repository_name }}
+          export GITHUB_REPO_OWNER=${{ steps.split.outputs.owner }}
+          export GITHUB_REPO_NAME=${{ steps.split.outputs.name }}
           # Only substitute the four env vars, keep all other ${…} intact
           envsubst '$PR_NUMBER $GITHUB_RUNNER_TOKEN $GITHUB_REPO_OWNER $GITHUB_REPO_NAME' \
             < actions/.github/templates/cloud-init.yml > cloud-init.generated.yml
@@ -101,8 +101,8 @@ jobs:
             --flavor c16-60gb-576 \
             --network def-akhanf-dev-network \
             --user-data cloud-init.generated.yml \
-            ${{ inputs.repository_name }}-pr-${{ inputs.pr_number }}
-          VM_ID=$(openstack server list --name ${{ inputs.repository_name }}-pr-${{ inputs.pr_number }} -f value -c ID)
+            ${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }}
+          VM_ID=$(openstack server list --name ${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }} -f value -c ID)
           echo "vm_id=$VM_ID" >> $GITHUB_OUTPUT
 
       - name: Wait for runner registration
@@ -115,7 +115,7 @@ jobs:
               -H "Authorization: Bearer ${RUNNER_PAT}" \
               https://api.github.com/repos/${{ inputs.repository }}/actions/runners \
               | jq -r '.runners[].name')
-            if echo "$runners" | grep -q "${{ inputs.repository_name }}-pr-${{ inputs.pr_number }}"; then
+            if echo "$runners" | grep -q "${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }}"; then
               echo "Runner registered."
               exit 0
             fi

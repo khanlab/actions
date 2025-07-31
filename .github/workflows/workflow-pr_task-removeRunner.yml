@@ -11,10 +11,6 @@ on:
         description: "Github repository (owner/name)"
         required: true
         type: string
-      repository_name:
-        description: "GitHub repository name"
-        required: true
-        type: string
       vm_id:
         description: "The OpenStack VM ID"
         required: true
@@ -39,6 +35,14 @@ jobs:
       OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.OS_APPLICATION_CREDENTIAL_SECRET }}
       RUNNER_PAT:                       ${{ secrets.RUNNER_PAT }}
     steps:
+      - name: Extract repo owner and name
+        id: split
+        shell: bash
+        run: |
+          IFS='/' read -r owner name <<< "${{ inputs.repository }}"
+          echo "owner=$owner" >> $GITHUB_OUTPUT
+          echo "name=$name" >> $GITHUB_OUTPUT
+          
       - name: Install Openstack CLI & tools
         shell: bash
         run: |
@@ -70,7 +74,7 @@ jobs:
             -H "Authorization: token $RUNNER_PAT" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${{ inputs.repository }}/actions/runners \
-            | jq -r --arg NAME "${{ github.event.repository.name }}-pr-${{ inputs.pr_number }}" \
+            | jq -r --arg NAME "${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }}" \
                 '.runners[] | select(.name==$NAME) | .id')
 
           if [ -n "$runner_id" ]; then
@@ -80,5 +84,5 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               https://api.github.com/repos/${{ inputs.repository }}/actions/runners/$runner_id
           else
-            echo "No runner '${{ github.event.repository.name }}-pr-${{ inputs.pr_number }}' found in ${{ inputs.repository }}"
+            echo "No runner '${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }}' found in ${{ inputs.repository }}"
           fi
