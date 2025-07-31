@@ -45,6 +45,13 @@ jobs:
     outputs:
       vm_id:                            ${{ steps.launch.outputs.vm_id }}
     steps:
+      - name: Checkout reusable workflow repo
+        uses: actions/checkout@v4
+        with:
+          repository: khanlab/actions
+          ref: djay/add-wetRunTestLogic
+          path: actions
+
       - name: Install OpenStack & Tools
         shell: bash
         run: |
@@ -83,7 +90,7 @@ jobs:
           export GITHUB_REPO_NAME=${{ inputs.repository_name }}
           # Only substitute the four env vars, keep all other ${…} intact
           envsubst '$PR_NUMBER $GITHUB_RUNNER_TOKEN $GITHUB_REPO_OWNER $GITHUB_REPO_NAME' \
-            < ${GITHUB_ACTION_PATH}/../templates/cloud-init.yml > cloud-init.generated.yml
+            < actions/.github/templates/cloud-init.yml > cloud-init.generated.yml
 
       - name: Launch VM
         id: launch
