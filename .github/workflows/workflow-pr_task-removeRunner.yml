@@ -6,15 +6,19 @@ on:
       pr_number:
         description: "PR number to test"
         required: true
+        type: string
       repository:
         description: "Github repository (owner/name)"
         required: true
+        type: string
       repository_name:
         description: "GitHub repository name"
         required: true
+        type: string
       vm_id:
         description: "The OpenStack VM ID"
         required: true
+        type: string
     secrets:
       OS_APPLICATION_CREDENTIAL_ID:
         required: true
