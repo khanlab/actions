@@ -1,5 +1,5 @@
 #cloud-config
-hostname: ${GH_REPO}-pr-${PR_NUMBER}
+hostname: ${GITHUB_REPO_NAME}-pr-${PR_NUMBER}
 
 write_files:
   - path: /run/start.sh
