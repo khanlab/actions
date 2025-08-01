@@ -1,5 +1,5 @@
 #cloud-config
-hostname: hippunfold-pr-${PR_NUMBER}
+hostname: ${GH_REPO}-pr-${PR_NUMBER}
 
 write_files:
   - path: /run/start.sh
