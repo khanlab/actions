@@ -65,7 +65,7 @@ jobs:
             -H "Authorization: Bearer ${RUNNER_PAT}" \
             https://api.github.com/user)
           if [ "$status" -ne 200 ]; then
-            echo "❌ Invalid PAT (HTTP $status)" >&2
+            echo "Invalid PAT (HTTP $status)" >&2
             exit 1
           fi
 
