@@ -17,4 +17,4 @@ runs:
     - name: Install snakebids with mamba
       shell: bash -l {0}
       run: |
-        mamba install -y -c bioconda -c conda-forge snakebids
+        mamba install -y python=3.11 -c bioconda -c conda-forge snakebids
