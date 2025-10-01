@@ -1,0 +1,22 @@
+name: Download and unzip dataset
+description: Downloads and unzips a dataset from a URL to a destination directory
+
+inputs:
+  destination_dir:
+    description: "Directory where the dataset should be stored"
+    required: true
+  download_url:
+    description: "URL to the zip file"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download and unzip dataset
+      shell: bash
+      run: |
+        mkdir -p ${{ inputs.destination_dir }}
+        cd ${{ inputs.destination_dir }}
+        wget -O dataset.zip "${{ inputs.download_url }}"
+        unzip dataset.zip
+        rm dataset.zip

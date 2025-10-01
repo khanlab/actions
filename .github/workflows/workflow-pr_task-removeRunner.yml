@@ -1,0 +1,75 @@
+name: Remove Ephemeral Runner
+
+on:
+  workflow_call:
+    inputs:
+      pr_number:
+        description: "PR number to test"
+        required: true
+        type: string
+      repository:
+        description: "Github repository (owner/name)"
+        required: true
+        type: string
+      vm_id:
+        description: "The OpenStack VM ID"
+        required: true
+        type: string
+    secrets:
+      OS_APPLICATION_CREDENTIAL_ID:
+        required: true
+      OS_APPLICATION_CREDENTIAL_SECRET:
+        required: true
+      RUNNER_PAT:
+        required: true
+
+jobs:
+  remove-runner:
+    runs-on: ubuntu-latest
+    env:
+      OS_AUTH_TYPE:                     v3applicationcredential
+      OS_AUTH_URL:                      https://arbutus.cloud.computecanada.ca:5000/v3
+      OS_USERNAME:                      djay
+      OS_USER_DOMAIN_NAME:              CCDB
+      OS_APPLICATION_CREDENTIAL_ID:     ${{ secrets.OS_APPLICATION_CREDENTIAL_ID }}
+      OS_APPLICATION_CREDENTIAL_SECRET: ${{ secrets.OS_APPLICATION_CREDENTIAL_SECRET }}
+      RUNNER_PAT:                       ${{ secrets.RUNNER_PAT }}
+    steps:
+      - name: Extract repo owner and name
+        id: split
+        shell: bash
+        run: |
+          IFS='/' read -r owner name <<< "${{ inputs.repository }}"
+          echo "owner=$owner" >> $GITHUB_OUTPUT
+          echo "name=$name" >> $GITHUB_OUTPUT
+          
+      - name: Install Openstack CLI & tools
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-openstackclient jq gettext-base
+
+      - name: Delete VM
+        shell: bash
+        run: |
+          openstack server delete ${{ inputs.vm_id }} || true
+
+      - name: Remove runner registration from GitHub
+        shell: bash
+        run: |
+          runner_id=$(curl -sS \
+            -H "Authorization: token $RUNNER_PAT" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ inputs.repository }}/actions/runners \
+            | jq -r --arg NAME "${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }}" \
+                '.runners[] | select(.name==$NAME) | .id')
+
+          if [ -n "$runner_id" ]; then
+            echo "Deleting runner ID $runner_id from ${{ inputs.repository }} …"
+            curl -X DELETE \
+              -H "Authorization: token $RUNNER_PAT" \
+              -H "Accept: application/vnd.github+json" \
+              https://api.github.com/repos/${{ inputs.repository }}/actions/runners/$runner_id
+          else
+            echo "No runner '${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }}' found in ${{ inputs.repository }}"
+          fi
