@@ -57,8 +57,7 @@ jobs:
       - name: Checkout reusable workflow repo
         uses: actions/checkout@v4
         with:
-          repository: khanlab/actions
-          ref: djay/add-wetRunTestLogic
+          ref: main
           path: actions
 
       - name: Install OpenStack & Tools
