@@ -47,6 +47,8 @@ jobs:
 
       - name: Get runner latest version
         id: latest_runner_version
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           LATEST_VERSION=$(gh release list --exclude-drafts --exclude-pre-releases --limit 1 -R actions/runner | grep -oP '(?<=v)[0-9.]+' | head -1)
           echo "Latest version: $LATEST_VERSION"
