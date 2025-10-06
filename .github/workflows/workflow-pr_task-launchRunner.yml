@@ -124,7 +124,7 @@ jobs:
           export RUNNER_LATEST_VERSION=${{ steps.latest_runner_version.outputs.runner_latest_version }}
           # Only substitute the four env vars, keep all other ${…} intact
           envsubst '$PR_NUMBER $GITHUB_RUNNER_TOKEN $GITHUB_REPO_OWNER $GITHUB_REPO_NAME $RUNNER_LATEST_VERSION' \
-            < actions/.github/templates/cloud-init.yml > cloud-init.generated-new.yml
+            < actions/.github/templates/cloud-init.yml > cloud-init.generated.yml
 
       - name: Launch VM
         id: launch
@@ -134,7 +134,7 @@ jobs:
             --image "Ubuntu-22.04.4-Jammy-x64-2024-06" \
             --flavor ${{ steps.validate_server_flavor.outputs.SERVER_FLAVOR }} \
             --network def-akhanf-dev-network \
-            --user-data cloud-init.generated-new.yml \
+            --user-data cloud-init.generated.yml \
             ${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }}
           VM_ID=$(openstack server list --name ${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }} -f value -c ID)
           echo "vm_id=$VM_ID" >> $GITHUB_OUTPUT
