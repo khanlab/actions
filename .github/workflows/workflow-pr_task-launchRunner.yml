@@ -12,9 +12,9 @@ on:
         required: true
         type: string
       server_flavor:
-        description: "cores-ram-space"
+        description: "cores-RAM-space"
         required: false
-        type: choice
+        type: options
         options:
           - c8-30gb-288
           - c16-120gb-576
