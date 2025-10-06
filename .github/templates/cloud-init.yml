@@ -21,7 +21,7 @@ write_files:
 
       # download & extract
       curl -fsSL -o runner.tar.gz \
-        "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz"
+        "https://github.com/actions/runner/releases/download/v2.328.0/actions-runner-linux-x64-2.328.0.tar.gz"
       tar xzf runner.tar.gz
       rm -f runner.tar.gz
 
