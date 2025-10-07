@@ -82,7 +82,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: khanlab/actions
-          ref: configurable-server-resources
+          ref: main
           path: actions
 
       - name: Install OpenStack & Tools
