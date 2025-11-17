@@ -11,6 +11,11 @@ on:
         description: "Github repository (owner/name)"
         required: true
         type: string
+      server_flavor:
+        description: "cores-RAM-space"
+        required: false
+        type: string
+        default: c16-60gb-576
     secrets:
       OS_APPLICATION_CREDENTIAL_ID:
         required: true
@@ -44,6 +49,25 @@ jobs:
           IFS='/' read -r owner name <<< "${{ inputs.repository }}"
           echo "owner=$owner" >> $GITHUB_OUTPUT
           echo "name=$name" >> $GITHUB_OUTPUT
+
+      - name: Validate server_flavor
+        id: validate_server_flavor
+        run: |
+          FLAV="${{ inputs.server_flavor }}"
+          allowed=( "c8-30gb-288" "c16-120gb-576" "c1-7.5gb-36" "c16-180gb-576" \
+                    "c4-30gb-144" "c8-90gb-288" "c8-60gb-288" "c2-15gb-72" \
+                    "c2-7.5gb-36" "c16-60gb-576" "c16-90gb-576" "c4-15gb-144" \
+                    "c4-45gb-144" )
+          ok=0
+          for v in "${allowed[@]}"; do
+            if [[ "$v" == "$FLAV" ]]; then ok=1; break; fi
+          done
+          if [[ $ok -ne 1 ]]; then
+            echo "Invalid server_flavor: '$FLAV'"
+            echo "Allowed: ${allowed[*]}"
+            exit 1
+          fi
+          echo "SERVER_FLAVOR=$FLAV" >> $GITHUB_OUTPUT
 
       - name: Get runner latest version
         id: latest_runner_version
@@ -108,7 +132,7 @@ jobs:
         run: |
           openstack server create \
             --image "Ubuntu-22.04.4-Jammy-x64-2024-06" \
-            --flavor c16-60gb-576 \
+            --flavor ${{ steps.validate_server_flavor.outputs.SERVER_FLAVOR }} \
             --network def-akhanf-dev-network \
             --user-data cloud-init.generated.yml \
             ${{ steps.split.outputs.name }}-pr-${{ inputs.pr_number }}
