@@ -1,0 +1,86 @@
+name: Pixi publish
+description: Build, validate, and optionally publish a Pixi-built Conda package
+
+inputs:
+  release-tag:
+    description: "Release tag, e.g. v2.1.0a0"
+    required: true
+
+  channel:
+    description: "Prefix.dev channel, e.g. akhanf/khanlab"
+    required: true
+
+  api-key:
+    description: "Prefix.dev API key"
+    required: false
+
+  upload:
+    description: "Upload the package after validation"
+    required: false
+    default: "false"
+
+outputs:
+  package:
+    description: "Path to the built Conda package"
+    value: ${{ steps.validate.outputs.package }}
+
+  version:
+    description: "Normalized package version"
+    value: ${{ steps.prepare.outputs.version }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Prepare package version
+      id: prepare
+      shell: bash
+      env:
+        RELEASE_TAG: ${{ inputs.release-tag }}
+      run: |
+        python "$GITHUB_ACTION_PATH/scripts/prepare.py"
+
+    - name: Setup Pixi
+      uses: prefix-dev/setup-pixi@v0.10.2
+      with:
+        run-install: false
+
+    - name: Build package
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        # Record any .conda files that existed before the build.
+        find . -maxdepth 1 -type f -name '*.conda' -printf '%f\n' \
+          | sort > "$RUNNER_TEMP/conda-before.txt"
+
+        pixi publish
+
+    - name: Validate package
+      id: validate
+      shell: bash
+      env:
+        RELEASE_VERSION: ${{ steps.prepare.outputs.version }}
+      run: |
+        python "$GITHUB_ACTION_PATH/scripts/validate.py"
+
+    - name: Upload package
+      if: ${{ inputs.upload == 'true' }}
+      shell: bash
+      env:
+        PREFIX_API_KEY: ${{ inputs.api-key }}
+        PREFIX_CHANNEL: ${{ inputs.channel }}
+        PACKAGE: ${{ steps.validate.outputs.package }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "${PREFIX_API_KEY:-}" ]; then
+          echo "api-key is required when upload=true"
+          exit 1
+        fi
+
+        echo "Uploading: ${PACKAGE}"
+
+        pixi upload prefix \
+          --channel "${PREFIX_CHANNEL}" \
+          "${PACKAGE}"
